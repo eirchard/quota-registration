@@ -78,7 +78,7 @@ function db_() {
   const id=PropertiesService.getScriptProperties().getProperty('SHEET_ID');
   if (!id) throw new Error('NOT_INITIALIZED');
   const ss = SpreadsheetApp.openById(id);
-  if (!/STAGING|TEST|ทดสอบ/i.test(ss.getName())) throw new Error('STAGING_ONLY');
+  if (id !== '1QlDW3VNLXd2ZVXzcn7xCSf706Icb01iLxMKQTIiuS_s' || !/STAGING|TEST|ทดสอบ/i.test(ss.getName())) throw new Error('STAGING_ONLY');
   return ss;
 }
 function tab_(name) {const ws=db_().getSheetByName(name);if(!ws)throw new Error('NOT_INITIALIZED');return ws;}
@@ -196,7 +196,7 @@ function submit_(p) {
   const required=['prefix','firstName','lastName','phone','previousSchool','level','major','address','district','amphoe','province','zipcode','guardianName','relationship','guardianPhone'];
   if(required.some(k=>!x[k])||!['นาย','นางสาว','นาง'].includes(x.prefix)||!['ปวช.','ปวส.'].includes(x.level))throw new Error('INVALID_INPUT');
   if(!/^0[0-9]{9}$/.test(x.phone)||!/^0[0-9]{9}$/.test(x.guardianPhone)||!/^[0-9]{5}$/.test(x.zipcode))throw new Error('INVALID_INPUT');
-  if(x.gpa&&!/^(?:[0-3](?:\\.[0-9]{1,2})?|4(?:\\.0{1,2})?)$/.test(x.gpa))throw new Error('INVALID_INPUT');
+  if(x.gpa&&!/^(?:[0-3](?:\.[0-9]{1,2})?|4(?:\.0{1,2})?)$/.test(x.gpa))throw new Error('INVALID_INPUT');
   if(!s.majors.includes(x.major))throw new Error('INVALID_INPUT');
   const key=clean_(p.idempotencyKey,100);
   if(!/^[a-zA-Z0-9_-]{20,100}$/.test(key))throw new Error('INVALID_INPUT');
