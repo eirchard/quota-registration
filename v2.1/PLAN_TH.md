@@ -76,3 +76,13 @@ node --test v2.1/domain.test.mjs
 ```
 
 **หมายเหตุ** ไฟล์ `prototype.html` ใช้ข้อมูลจำลองและไม่ส่งข้อมูลไปฐานข้อมูล. `domain.mjs` ยังเป็น shared design/test module ไม่ได้เชื่อมกับ Google Apps Script ที่ Deploy อยู่.
+
+
+## Staging integration added (2026-10-27)
+- [x] Code.staging.gs — strict staging spreadsheet name guard, QRV21 tables, more applicant fields, idempotency, audit and history
+- [x] worker.staging.js — isolated staging session/cookie, staging-only variable, detail/history routes
+- [x] index.staging.html — staging form includes address/guardian fields; admin detail reads from staging API
+- [x] STAGING_SETUP_TH.md — checklist for separate Google Sheets/Apps Script/Cloudflare staging
+- [x] .github/workflows/v21-validate.yml — Node domain tests + Worker/UI JavaScript syntax checks (CI results not yet verified)
+- [ ] Verify CI result, staging deployment and end-to-end tests before claiming full completion
+- [ ] Add Cloudflare Turnstile, edge rate limiting, complete server-side permissions and pagination before production
