@@ -1,0 +1,9 @@
+name = "quota-registration-v2"
+main = "worker.js"
+compatibility_date = "2026-10-26"
+
+[vars]
+GITHUB_INDEX_URL = "https://raw.githubusercontent.com/eirchard/quota-registration/main/v2/index.html"
+
+# Set GAS_ENDPOINT, BACKEND_SECRET, SESSION_SECRET, SETUP_KEY
+# as encrypted Cloudflare Worker Secrets (never write them here).
