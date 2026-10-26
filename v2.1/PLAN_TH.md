@@ -56,3 +56,23 @@
 - เจ้าหน้าที่ประจำสาขาเห็นข้อมูลได้ระดับใด
 - นโยบาย PDPA, การเก็บรักษา และสิทธิ์แก้ไขข้อมูลผู้สมัคร
 - วิธีตรวจสอบสถานะผู้สมัครที่ไม่เปิดเผย PII
+
+
+## ความคืบหน้า Implementation (2026-10-27)
+- [x] แยก branch `develop/v2.1` ไม่เปลี่ยน production
+- [x] เพิ่มต้นแบบ wizard 5 ขั้นตอน และหน้า Admin ข้อมูลจำลอง (`prototype.html`)
+- [x] ตรวจช่องบังคับ / เบอร์โทร / รหัสไปรษณีย์ / GPA ในต้นแบบ
+- [x] เพิ่ม domain module (`domain.mjs`): validate application, RBAC, state transition
+- [x] เพิ่ม unit test definitions (`domain.test.mjs`)
+- [ ] รัน unit tests ใน CI และตรวจผ่านจริง
+- [ ] เชื่อม validation เข้ากับ backend ที่มีการตรวจสิทธิ์และ payload server-side
+- [ ] สร้าง staging Apps Script + Google Sheets สำเนา
+- [ ] เพิ่ม pagination, dashboard aggregation, audit history, idempotency, rate limiting และ Turnstile
+- [ ] E2E/UAT ด้วยข้อมูลจำลอง, ตรวจ PDPA, สำรอง/rollback ก่อนปล่อยจริง
+
+### การรันทดสอบเมื่อ checkout branch
+```bash
+node --test v2.1/domain.test.mjs
+```
+
+**หมายเหตุ** ไฟล์ `prototype.html` ใช้ข้อมูลจำลองและไม่ส่งข้อมูลไปฐานข้อมูล. `domain.mjs` ยังเป็น shared design/test module ไม่ได้เชื่อมกับ Google Apps Script ที่ Deploy อยู่.
