@@ -1,0 +1,36 @@
+name: Quota V2.1 validation
+on:
+  push:
+    branches:
+      - develop/v2.1
+  pull_request:
+    branches:
+      - main
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Domain unit tests
+        run: node --test v2.1/domain.test.mjs
+      - name: Worker JavaScript syntax
+        run: node --check v2.1/worker.staging.js
+      - name: Domain syntax
+        run: node --check v2.1/domain.mjs
+      - name: Frontend inline JavaScript syntax
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            import vm from "node:vm";
+            for (const path of ["v2.1/index.staging.html","v2.1/prototype.html"]) {
+              const html=fs.readFileSync(path,"utf8");
+              const scripts=[...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)];
+              if (!scripts.length) throw new Error("No inline script in "+path);
+              for (const s of scripts) new vm.Script(s[1],{filename:path});
+            }
+          '
