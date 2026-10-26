@@ -12,10 +12,10 @@
 
 ## ตั้งค่าเฉพาะสภาพแวดล้อมทดสอบ
 
-1. ทำสำเนา Google Sheets ที่ไม่มีข้อมูลผู้สมัครจริง ตั้งชื่อเช่น `Quota Registration STAGING`.
+1. **สร้าง Google Sheets STAGING สำเร็จแล้ว** ชื่อ `Quota Registration V2.1 STAGING` อยู่ที่ https://docs.google.com/spreadsheets/d/1QlDW3VNLXd2ZVXzcn7xCSf706Icb01iLxMKQTIiuS_s/edit (5 แท็บพร้อมหัวคอลัมน์ และ `admissionsOpen=false`). ไม่ต้องสร้างชีตใหม่และห้ามใช้ชีต Production.
 2. สร้าง Google Apps Script **ใหม่** แล้ววาง `Code.staging.gs` ใน `Code.gs` ของสคริปต์ใหม่ (อย่าแทน Code.gs ของ Production).
 3. Script Properties:
-   - `SHEET_ID` — Spreadsheet ID ของ **สำเนา STAGING** (ไม่ใช่ชีตจริง)
+   - `SHEET_ID` — `1QlDW3VNLXd2ZVXzcn7xCSf706Icb01iLxMKQTIiuS_s` (ชีตทดสอบที่สร้างแล้วเท่านั้น; โค้ดตรวจ ID นี้ด้วย)
    - `BACKEND_SECRET` — Secret ใหม่ยาวอย่างน้อย 40 ตัวอักษร ไม่ใช้ค่าระบบจริง
 4. Run `setupSystem()` แล้วตรวจการสร้างแท็บ `QRV21_Applications`, `QRV21_Staff`, `QRV21_Settings`, `QRV21_Audit`, `QRV21_ApplicationHistory`.
 5. Deploy Web App ทดสอบ `Execute as Me` และ `Who has access Anyone`. การเปิดแบบ Anyone ยังต้องใช้ BACKEND_SECRET ให้ถูกต้องทุกคำขอ; อย่าเผยแพร่ secrets
@@ -31,7 +31,7 @@
 | SESSION_SECRET | Secret | รหัสสุ่มใหม่ยาวอย่างน้อย 40 ตัวอักษร |
 | SETUP_KEY | Secret | รหัสสุ่มใหม่ใช้เฉพาะสร้าง Owner Staging |
 
-8. Deploy Worker ทดสอบ แล้วเปิด `/health` ก่อน ตามด้วย `/api/config` และ `/api/setup-status`. ทดสอบสร้าง Owner **เฉพาะ Staging** หลังยืนยันว่าไม่มี Owner อยู่แล้ว
+8. **อย่าใช้ Cloudflare Workers Production หรือ Secret ของ V2 เดิม**. Deploy Worker ทดสอบ แล้วเปิด `/health` ก่อน ตามด้วย `/api/config` และ `/api/setup-status`. ทดสอบสร้าง Owner **เฉพาะ Staging** หลังยืนยันว่าไม่มี Owner อยู่แล้ว
 9. ตรวจ `admissionsOpen=false` ในแท็บ `QRV21_Settings` ก่อนเปิดหน้าฟอร์ม เมื่อพร้อมทดสอบด้วยข้อมูลสมมติ ค่อยเปิดรับสมัคร **เฉพาะ staging** และปิดอีกครั้งหลังทดสอบ
 
 ## Test plan ขั้นต่ำ
@@ -47,7 +47,7 @@
 - Worker และ Apps Script ใช้ shared secret กันในการอนุญาตคำขอจาก Worker; ชื่อ role ที่ปรากฏใน `domain.mjs` ยังไม่ enforce ครบทุก role ใน Code.staging.gs
 - การเพิ่มเจ้าหน้าที่มีเพียง Owner/Admin/Staff/Viewer ใน Backend staging ชุดนี้
 - รายการผู้สมัครใน Admin ยังแสดงสูงสุด 300 รายการ ไม่รองรับ server-side paging
-- หน้า UI ไม่ใช่ full wizard แบบ step-by-step; `prototype.html` เป็นหน้าทดลอง wizard 5 ขั้นตอน
+- `index.staging.html` มีตัวนำทาง wizard 4 ขั้นตอนสำหรับทดสอบ ส่วน `prototype.html` เป็น sandbox demo อีกหน้า; ต้องทำ UAT บนอุปกรณ์จริงก่อนใช้ Production
 - ข้อมูลส่วนตัวต้องมี PDPA retention schedule และการกำหนดสิทธิ์การส่งออกข้อมูลก่อนเปิดจริง
 - ลิงก์ GitHub ของ staging เป็นเพียง source code; เว็บไซต์ต้องเข้าผ่าน URL Cloudflare Worker ของ staging
 
