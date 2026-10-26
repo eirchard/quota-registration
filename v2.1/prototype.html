@@ -18,11 +18,20 @@ const fields=[
  [["guardianName","ชื่อผู้ปกครอง"],["relationship","ความสัมพันธ์","select",["บิดา","มารดา","ผู้ปกครองอื่น"]],["guardianPhone","เบอร์ติดต่อผู้ปกครอง","tel"]],
  [["school","สถานศึกษาเดิม"],["gpa","เกรดเฉลี่ย"],["level","ระดับการศึกษา","select",["ปวช.","ปวส."]],["major","สาขา","select",["ตัวอย่างสาขา A","ตัวอย่างสาขา B"]]]
 ];
-const state={step:0,values:{}};const $=id=>document.getElementById(id);const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const state={step:0,values:{},errors:{}};const $=id=>document.getElementById(id);const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function field(row){let [id,label,type,options]=row;let v=escapeHtml(state.values[id]||"");return '<div class="field"><label for="'+id+'">'+label+'</label>'+(type==="select"?'<select id="'+id+'"><option value="">กรุณาเลือก</option>'+options.map(o=>'<option '+(v===o?'selected':'')+'>'+escapeHtml(o)+'</option>').join("")+'</select>':'<input id="'+id+'" type="'+(type||'text')+'" value="'+v+'">')+'</div>'}
-function save(){(fields[state.step]||[]).forEach(r=>{state.values[r[0]]=$(r[0]).value;});}
+function save(){(fields[state.step]||[]).forEach(r=>{state.values[r[0]]=$(r[0]).value.trim();});}
+function validateStep(){
+ const required={0:["prefix","firstName","lastName","phone"],1:["address","district","amphoe","province","zipcode"],2:["guardianName","relationship","guardianPhone"],3:["school","level","major"]};
+ const errors=[];
+ for(const key of(required[state.step]||[])){if(!state.values[key])errors.push("กรุณากรอก "+key);}
+ for(const key of ["phone","guardianPhone"]){if(state.values[key]&&!/^0[0-9]{9}$/.test(state.values[key]))errors.push("กรุณากรอกเบอร์โทรศัพท์ "+key+" ให้ครบ 10 หลัก");}
+ if(state.values.zipcode&&!/^[0-9]{5}$/.test(state.values.zipcode))errors.push("รหัสไปรษณีย์ต้องมี 5 หลัก");
+ if(state.values.gpa&&(!/^[0-4](?:\.[0-9]{1,2})?$/.test(state.values.gpa)||Number(state.values.gpa)>4))errors.push("เกรดเฉลี่ยต้องอยู่ระหว่าง 0–4");
+ return errors;
+}
 function render(){ $("steps").innerHTML=titles.map((t,i)=>'<span class="'+(i===state.step?'active':'')+'">'+(i+1)+'. '+t+'</span>').join("");$("stepContent").innerHTML=state.step<4?'<div class="fields">'+fields[state.step].map(field).join("")+'</div>':'<div class="sample"><b>สรุปข้อมูลที่กรอกในหน้าทดลอง</b>'+Object.entries(state.values).map(([k,v])=>'<p><b>'+escapeHtml(k)+'</b>: '+escapeHtml(v)+'</p>').join("")+'<p><small>แบบฟอร์มต้นแบบนี้ไม่มีปุ่มส่งเข้าฐานข้อมูล</small></p></div>';$("back").disabled=state.step===0;$("next").textContent=state.step===4?'จบการทดลอง':'ถัดไป';}
-$("back").onclick=()=>{if(state.step>0){save();state.step--;render();}};$("next").onclick=()=>{if(state.step===4){alert("นี่เป็นต้นแบบ ยังไม่มีการส่งข้อมูลไปฐานข้อมูล");return;}save();state.step++;render();};
+$("back").onclick=()=>{if(state.step>0){save();state.step--;render();}};$("next").onclick=()=>{if(state.step===4){alert("นี่เป็นต้นแบบ ยังไม่มีการส่งข้อมูลไปฐานข้อมูล");return;}save();const errors=validateStep();if(errors.length){alert(errors.join("\n"));return;}state.step++;render();};
 $("tabApply").onclick=()=>{ $("apply").classList.remove("hidden");$("admin").classList.add("hidden");$("tabApply").classList.add("active");$("tabAdmin").classList.remove("active");};
 $("tabAdmin").onclick=()=>{ $("admin").classList.remove("hidden");$("apply").classList.add("hidden");$("tabAdmin").classList.add("active");$("tabApply").classList.remove("active");};
 const sample=[["TEST-001","นักเรียน ทดสอบหนึ่ง","ตัวอย่างสาขา A","รอตรวจสอบ"],["TEST-002","นักเรียน ทดสอบสอง","ตัวอย่างสาขา B","กำลังตรวจสอบ"],["TEST-003","นักเรียน ทดสอบสาม","ตัวอย่างสาขา A","ผ่านการคัดเลือก"]];
