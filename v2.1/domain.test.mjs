@@ -17,3 +17,7 @@ test('viewer cannot modify applications',()=>assert.equal(can('Viewer','applicat
 test('only owner manages staff',()=>{assert.equal(can('Owner','staff.manage'),true);assert.equal(can('Admin','staff.manage'),false);});
 test('department staff cannot view other department',()=>{assert.equal(can('DepartmentStaff','applications.departmentRead',false),false);assert.equal(can('DepartmentStaff','applications.departmentRead',true),true);});
 test('allowed status transition',()=>{assert.equal(allowedTransition('submitted','reviewing'),true);assert.equal(allowedTransition('approved','submitted'),false);});
+
+test('no published majors fails closed',()=>assert.equal(validateApplication(input,[]).errors.major,'NOT_OPEN'));
+test('department user cannot read all applications',()=>assert.equal(can('DepartmentStaff','applications.read',false),false));
+test('department user may read assigned applications',()=>assert.equal(can('DepartmentStaff','applications.read',true),true));
