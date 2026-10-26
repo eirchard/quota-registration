@@ -28,7 +28,7 @@ export function validateApplication(payload,allowedMajors=[]) {
     if(value&&rule.options&&!rule.options.includes(value)){errors[key]="INVALID_OPTION";continue;}
     normalized[key]=value;
   }
-  if(normalized.major&&allowedMajors.length&&!allowedMajors.includes(normalized.major))errors.major="NOT_OPEN";
+  if(normalized.major&&(!Array.isArray(allowedMajors)||!allowedMajors.includes(normalized.major)))errors.major="NOT_OPEN";
   return {valid:Object.keys(errors).length===0,errors,data:Object.keys(errors).length?null:normalized};
 }
 export function can(role,permission,departmentMatch=false) {
@@ -42,7 +42,7 @@ export function can(role,permission,departmentMatch=false) {
     "staff.manage":["Owner"]
   };
   if(!matrix[permission]?.includes(role))return false;
-  if(role==="DepartmentStaff"&&(permission==="applications.departmentRead"||permission==="dashboard.read"))return departmentMatch;
+  if(role==="DepartmentStaff"&&["applications.read","applications.departmentRead","dashboard.read"].includes(permission))return departmentMatch;
   return true;
 }
 export function allowedTransition(from,to) {
