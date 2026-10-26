@@ -1,6 +1,6 @@
 /** Quota Registration V2 – Cloudflare Worker (same-origin frontend + secure API) */
 const COOKIE='qr_v2_session';
-const ITERATIONS=160000;
+const ITERATIONS=100000;
 const TTL=8*60*60;
 const te=new TextEncoder();
 const noStore={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
