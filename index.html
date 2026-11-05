@@ -50,7 +50,9 @@
       <div class="card border-primary mb-6">
 		    <div class="card-header text-white bg-primary"><i class="fas fa-address-card"></i> ฟอร์มบันทึกข้อมูล</div>
 		      <div class="card-body">
-						<form id="myForm" onsubmit="event.preventDefault(); handleFormSubmit(this); return false;">
+						<div class="alert alert-info" role="note">กรอกข้อมูลเพื่อสมัครเรียน ข้อมูลจะส่งให้วิทยาลัยการอาชีพนครยะลาเพื่อดำเนินการรับสมัคร</div>
+<form id="myForm" onsubmit="event.preventDefault(); handleFormSubmit(this); return false;">
+<div style="position:absolute;left:-10000px" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
               <!-- แถวแรก -->
               <h5><i class="fa-solid fa-user-tie"></i><b> ข้อมูลส่วนตัว</b></h5>
 							<div class="form-row">
@@ -621,27 +623,30 @@ function handleFormSubmit(formObject){
         submitButton.disabled = false;
         submitButton.textContent = "บันทึก";
       };
-      if (typeof google === "undefined" || !google.script || !google.script.run) {
+      const payload = Object.fromEntries(new FormData(formObject).entries());
+      if (!formObject.dataset.requestId) formObject.dataset.requestId = crypto.randomUUID();
+      payload.requestId = formObject.dataset.requestId;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+      fetch("https://nyc-quota.muhammadeirchard-m.workers.dev/api/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload),
+        credentials: "omit",
+        signal: controller.signal
+      }).then(async function(response) {
+        const result = await response.json();
+        if (!response.ok || !result.ok || result.receipt !== payload.requestId) throw new Error(result.message || "ยังยืนยันการบันทึกไม่ได้ กรุณาลองใหม่");
+        formObject.reset();
+        delete formObject.dataset.requestId;
+        updateMajorOptions();
+        await Swal.fire({icon:"success", title:"บันทึกข้อมูลเรียบร้อย", text:"รหัสอ้างอิง: " + result.receipt, confirmButtonText:"ตกลง"});
+      }).catch(function(error) {
+        Swal.fire({icon:"error", title:"ยังไม่ยืนยันการบันทึก", text:error.name === "AbortError" ? "ระบบตอบกลับช้า ข้อมูลยังอยู่ในฟอร์ม กดบันทึกอีกครั้งได้โดยใช้รหัสคำขอเดิม" : error.message, confirmButtonText:"ตกลง"});
+      }).finally(function() {
+        clearTimeout(timeout);
         finish();
-        Swal.fire({icon: "info", title: "กรุณาเปิดผ่านลิงก์เว็บแอป", text: "หน้านี้เก็บโค้ดไว้บน GitHub และต้องเปิดผ่าน Apps Script เพื่อบันทึกข้อมูล"});
-        return;
-      }
-      google.script.run
-        .withSuccessHandler(function(message) {
-          finish();
-          if (message !== "บันทึกข้อมูลสำเร็จ") {
-            Swal.fire({icon: "error", title: "บันทึกไม่สำเร็จ", text: "กรุณาลองใหม่หรือติดต่อเจ้าหน้าที่"});
-            return;
-          }
-          document.getElementById("myForm").reset();
-          updateMajorOptions();
-          Swal.fire({icon: "success", title: "บันทึกข้อมูลเรียบร้อย", confirmButtonText: "ตกลง"});
-        })
-        .withFailureHandler(function() {
-          finish();
-          Swal.fire({icon: "error", title: "เชื่อมต่อไม่สำเร็จ", text: "ข้อมูลยังอยู่ในฟอร์ม กรุณาลองใหม่"});
-        })
-        .processForm(formObject);
+      });
     } else if (result.dismiss === Swal.DismissReason.cancel) {
       Swal.fire({
         position: "center",
