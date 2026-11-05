@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 
 <head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ลงทะเบียนสมัครเรียนรอบโควตา | วิทยาลัยการอาชีพนครยะลา</title>
   <!-- css -->
 	<link rel="stylesheet" href="https://getbootstrap.com/docs/4.6/dist/css/bootstrap.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +24,7 @@
 	</style>
   <!-- js -->
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="sweetalert2.all.min.js"></script>
+
   <script src="https://kit.fontawesome.com/3bead97ddf.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous"></script>   
   <script src="https://www.ninenik.com/js/jquery.datetimepicker.js"></script>
@@ -47,7 +50,7 @@
       <div class="card border-primary mb-6">
 		    <div class="card-header text-white bg-primary"><i class="fas fa-address-card"></i> ฟอร์มบันทึกข้อมูล</div>
 		      <div class="card-body">
-						<form id="myForm" onsubmit="handleFormSubmit(this)">
+						<form id="myForm" onsubmit="event.preventDefault(); handleFormSubmit(this); return false;">
               <!-- แถวแรก -->
               <h5><i class="fa-solid fa-user-tie"></i><b> ข้อมูลส่วนตัว</b></h5>
 							<div class="form-row">
@@ -246,7 +249,238 @@
 					</div>
 				</div>
         </div>
-<?!= HtmlService.createHtmlOutputFromFile('script').getContent(); ?>		
+<script>
+$(function(){
+     
+    var thaiYear = function (ct) {
+        var leap=3;  
+        var dayWeek=["พฤ.", "ศ.", "ส.", "อา.","จ.", "อ.", "พ."];  
+        if(ct){  
+            var yearL=new Date(ct).getFullYear()-543;  
+            leap=(((yearL % 4 == 0) && (yearL % 100 != 0)) || (yearL % 400 == 0))?2:3;  
+            if(leap==2){  
+                dayWeek=["ศ.", "ส.", "อา.", "จ.","อ.", "พ.", "พฤ."];  
+            }  
+        }              
+        this.setOptions({  
+            i18n:{ th:{dayOfWeek:dayWeek}},dayOfWeekStart:leap,  
+        })                
+    };
+     
+    $("#mydateth").datetimepicker({
+        timepicker:false,  // กำหนด ไม่แสดงตัวเลือกเวลา  
+        format:'d-m-Y',  // กำหนดรูปแบบวันที่ ที่ใช้ เป็น 00-00-0000  
+        lang:'th',  // แสดงภาษาไทย  
+        yearStart:1914,  // ช่วงเลือกปีเริ่มต้น ใช้ ค.ศ.  
+        yearOffset:543,  // ใช้ปี พ.ศ. บวก 543 เพิ่มเข้าไปในปี ค.ศ       
+        onShow:thaiYear,
+        onChangeMonth:thaiYear,
+        closeOnDateSelect:true, // ปิด ถ้าเลือกวันที่แล้ว   
+    });   
+     
+    $("#mydateth").on("change",function(){  
+        var dayBirth=$(this).val();  
+        var getdayBirth=dayBirth.split("-");  
+        var YB=getdayBirth[2]-543;  
+        var MB=getdayBirth[1];  
+        var DB=getdayBirth[0];  
+           
+        var setdayBirth=moment(YB+"-"+MB+"-"+DB);    
+        var setNowDate=moment();  
+        var yearData=setNowDate.diff(setdayBirth, 'years', true); // ข้อมูลปีแบบทศนิยม  
+        var yearFinal=Math.round(setNowDate.diff(setdayBirth, 'years', true),0); // ปีเต็ม  
+        var yearReal=setNowDate.diff(setdayBirth, 'years'); // ปีจริง  
+        var monthDiff=Math.floor((yearData-yearReal)*12); // เดือน  
+        var str_year_month=yearReal+" ปี "+monthDiff+" เดือน"; // ต่อวันเดือนปี  
+        $("#age").val(str_year_month);  
+ 
+    });  
+     
+});
+/* เริ่มต้น script จังหวัด */
+$.Thailand({
+  $district: $('#district'),
+  $amphoe: $('#amphoe'),
+  $province: $('#province'),
+  $zipcode: $('#zipcode'),
+
+  onDataFill: function(data){
+    console.log(data)
+    var html = '<b>ที่อยู่:</b> ตำบล' + data.district + ' อำเภอ' + data.amphoe + ' จังหวัด' + data.province + ' ' + data.zipcode;
+    $('#demo2-output').html('')
+
+  },
+
+  onLoad: function () {
+    console.info('Autocomplete is ready!');
+    $('#loader, .demo').toggle();
+  }
+});
+/* สิ้นสุด script จังหวัด */
+/*----------------------------------------------------------------------------------------------------------------*/
+/*เริ่มต้นการตรวจสอบเลขบัตรประชาชน*/
+function CheckIdcard(ele)
+{
+    var idcard=document.getElementById("idcard").value;
+    var vchar = String.fromCharCode(event.keyCode);
+
+    /*เริ่มต้นตรวจสอบการป้อนข้อมูล ให้พิมพ์เฉพาะตัวเลข*/
+    if ((vchar<'0' || vchar>'9'))
+    {
+      Swal.fire({
+        icon: 'error',
+        title: 'กรุณากรอกเฉพาะตัวเลข',
+        text: 'กรุณาพิมพ์ตัวเลข 0 - 9',
+        showConfirmButton: false,
+        timer: 1700
+      })
+      return false;
+    /*สิ้นสุดการตรวจสอบการป้อนเฉพาะตัวเลข*/
+    /*เริ่มต้นตรวจสอบเลขบัตรประชาชน เกิน 13 หลัก*/
+    }else if(idcard.length>12){
+      Swal.fire({
+        icon: 'error',
+        title: 'เลขบัตรประชาชนเกิน 13 หลัก',
+        text: 'กรุณาทำรายการใหม่',
+        showConfirmButton: false,
+        timer: 1700
+      })
+      return false;
+    }
+    /*สิ้นสุดตรวจสอบเลขบัตรประชาชน เกิน 13 หลัก*/
+}
+/*เริ่มต้นตรวจสอบเลขบัตรประชาชน ไม่ถึง 13 หลัก*/
+function Checkid(ele)
+{
+    var idcard=document.getElementById("idcard").value;
+    if(idcard.length<13){
+        Swal.fire('ตัวเลขไม่ถึง 13 หลัก','กรุณากรอกข้อมูลให้ครบ','warning');
+        $('#idcard').val('');
+        return false;
+    }
+}
+/*สิ้นสุดการตรวจสอบเลขบัตรประชาชน ไม่ถึง 13 หลัก*/
+/*สิ้นสุดการตรวจสอบเลขบัตรประชาชน*/
+/*----------------------------------------------------------------------------------------------------------------*/
+/*เริ่มต้นการตรวจสอบเบอร์โทรศัพท์มือถือ*/
+function ChekNumber(ele)
+{
+    var tel=document.getElementById("phonemobile").value;
+    var vchar = String.fromCharCode(event.keyCode);
+    /*เริ่มต้นตรวจสอบการป้อนข้อมูล ให้พิมพ์เฉพาะตัวเลข*/
+    if ((vchar<'0' || vchar>'9'))
+    {
+      Swal.fire({
+        icon: 'error',
+        title: 'กรุณากรอกเฉพาะตัวเลข',
+        text: 'กรุณาพิมพ์ตัวเลข 0 - 9',
+        showConfirmButton: false,
+        timer: 1700
+      })
+      return false;
+    /*สิ้นสุดการตรวจสอบการป้อนเฉพาะตัวเลข*/
+    /*เริ่มต้นตรวจสอบเบอรฺ์โทรศัพท์ เกิน 10 หลัก*/
+    }else if(tel.length>9){
+      Swal.fire({
+        icon: 'error',
+        title: 'เบอร์โทรศัพท์มือถือเกิน 10 หลัก',
+        text: 'กรุณาทำรายการใหม่',
+        showConfirmButton: false,
+        timer: 1700
+      })
+      $('#tel').val('');
+      return false;
+    }
+    /*สิ้นสุดตรวจสอบเบอรฺ์โทรศัพท์ เกิน 10 หลัก*/
+}
+/*สิ้นสุดการตรวจสอบเบอร์โทรศัพท์*/
+
+/*เริ่มต้นการตรวจสอบเบอร์โทรศัพท์มือถือ*/
+function ChekNumber2(ele)
+{
+  var vchar = String.fromCharCode(event.keyCode);
+
+  // ถ้าช่องข้อความมีขีดกลางอยู่แล้ว
+  if (ele.value.includes('-')) {
+    // ป้องกันการพิมพ์ตัวอักษรอื่นหลังจากใส่ขีดกลาง
+    Swal.fire({
+      icon: 'error',
+      title: 'ไม่สามารถพิมพ์ข้อมูลเพิ่มเติมได้',
+      text: 'เมื่อใส่เครื่องหมาย "-" แล้ว ไม่สามารถพิมพ์อย่างอื่นได้',
+      showConfirmButton: false,
+      timer: 1700
+    });
+    return false;
+  }
+
+  // อนุญาตเฉพาะตัวเลข 0-9 และเครื่องหมายขีดกลาง (-)
+  if (!vchar.match(/^([0-9\-])+$/i)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'กรุณากรอกเฉพาะตัวเลขและเครื่องหมาย -',
+      text: 'กรุณาพิมพ์ตัวเลข 0-9 หรือเครื่องหมาย -',
+      showConfirmButton: false,
+      timer: 1700
+    });
+    return false;
+  }
+
+  return true;
+}
+/*สิ้นสุดการตรวจสอบเบอร์โทรศัพท์*/
+
+/*----------------------------------------------------------------------------------------------------------------*/
+/*เริ่มต้นตรวจสอบการป้อนข้อมูล ให้พิมพ์เฉพาะตัวเลข*/
+function check(ele){
+  var vchar = String.fromCharCode(event.keyCode);
+  
+    if (!vchar.match(/^([0-9])+$/i))
+    {
+      Swal.fire({
+        icon: 'error',
+        title: 'กรุณากรอกเฉพาะตัวเลข',
+        text: 'กรุณาพิมพ์ตัวเลข 0 - 9',
+        showConfirmButton: false,
+        timer: 1700
+      })
+      return false;
+    
+    }
+}
+function check2(ele){
+  var vchar = String.fromCharCode(event.keyCode);
+  
+    if (!vchar.match(/^([.0-9])+$/i))
+    {
+      Swal.fire({
+        icon: 'error',
+        title: 'กรุณากรอกเฉพาะตัวเลขหรือ . (จุด) เท่านั้น',
+        text: 'กรุณาพิมพ์ตัวเลข 0 - 9 หรือ . (จุด)',
+        showConfirmButton: false,
+        timer: 1700
+      })
+      return false;
+    
+    }
+}
+function check3(ele){
+  var vchar = String.fromCharCode(event.keyCode);
+  
+    if (!vchar.match(/^([/0-9])+$/i))
+    {
+      Swal.fire({
+        icon: 'error',
+        title: 'กรุณากรอกเฉพาะตัวเลขหรือ / เท่านั้น',
+        text: 'กรุณาพิมพ์ตัวเลข 0 - 9 หรือ /',
+        showConfirmButton: false,
+        timer: 1700
+      })
+      return false;
+    
+    }
+}
+/*สิ้นสุดการตรวจสอบการป้อนเฉพาะตัวเลข*/
+</script>		
 
 <script>
 
@@ -379,16 +613,35 @@ function handleFormSubmit(formObject){
   }).then((result) => {
     if (result.isConfirmed) {
       // หากผู้ใช้ยืนยัน ให้บันทึกข้อมูล
-      google.script.run.processForm(formObject);
-      document.getElementById("myForm").reset();
-
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "บันทึกข้อมูลเรียบร้อย",
-        showConfirmButton: false,
-        timer: 1500,
-      });
+      const submitButton = document.getElementById("submitButton");
+      if (submitButton.disabled) return;
+      submitButton.disabled = true;
+      submitButton.textContent = "กำลังบันทึก...";
+      const finish = () => {
+        submitButton.disabled = false;
+        submitButton.textContent = "บันทึก";
+      };
+      if (typeof google === "undefined" || !google.script || !google.script.run) {
+        finish();
+        Swal.fire({icon: "info", title: "กรุณาเปิดผ่านลิงก์เว็บแอป", text: "หน้านี้เก็บโค้ดไว้บน GitHub และต้องเปิดผ่าน Apps Script เพื่อบันทึกข้อมูล"});
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function(message) {
+          finish();
+          if (message !== "บันทึกข้อมูลสำเร็จ") {
+            Swal.fire({icon: "error", title: "บันทึกไม่สำเร็จ", text: "กรุณาลองใหม่หรือติดต่อเจ้าหน้าที่"});
+            return;
+          }
+          document.getElementById("myForm").reset();
+          updateMajorOptions();
+          Swal.fire({icon: "success", title: "บันทึกข้อมูลเรียบร้อย", confirmButtonText: "ตกลง"});
+        })
+        .withFailureHandler(function() {
+          finish();
+          Swal.fire({icon: "error", title: "เชื่อมต่อไม่สำเร็จ", text: "ข้อมูลยังอยู่ในฟอร์ม กรุณาลองใหม่"});
+        })
+        .processForm(formObject);
     } else if (result.dismiss === Swal.DismissReason.cancel) {
       Swal.fire({
         position: "center",
